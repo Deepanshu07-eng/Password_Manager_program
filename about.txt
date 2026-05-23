@@ -1,0 +1,10 @@
+Project Name- Password Manager Program
+
+Uses:
+
+1- Dictionary
+2- Loops
+3- Conditional
+4- module: random
+5- file handling
+
