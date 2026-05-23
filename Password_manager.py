@@ -20,4 +20,5 @@ def generate_password():
     return password
 
 while True:
-    
+    print("\n-----PERSONAL PASSWORD MANAGER-----")
+    print("1. Save Password")
