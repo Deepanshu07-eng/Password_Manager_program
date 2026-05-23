@@ -13,3 +13,11 @@ try:
 
 except:
     pass
+
+def generate_password():
+    chars =string.ascii_letters + string.digits + "@#$%^&*()-+="
+    password = "".join(random.choice(chars) for _ in range(8))
+    return password
+
+while True:
+    
