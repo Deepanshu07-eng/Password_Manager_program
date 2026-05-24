@@ -114,7 +114,7 @@ while True:
     # Exit
     elif choice == "7":
 
-        print("Good Bye...")
+        print("Good Bye...  See you soon")
         break
 
     else:
