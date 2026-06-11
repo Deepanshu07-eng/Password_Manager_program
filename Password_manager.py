@@ -1,121 +1,221 @@
+import json
 import random
 import string
 
-passwords = {}
-
-# Load existing passwords
-try:
-    with open("password.txt", "r") as file:
-        for line in file:
-            website, password = line.strip().split(":")
-            passwords[website] = password
-except:
-    pass
+FILE_NAME = "passwords.json"
 
 
-# Generate password
+# Load passwords from JSON file
+def load_passwords():
+    try:
+        with open(FILE_NAME, "r") as file:
+            return json.load(file)
+
+    except FileNotFoundError:
+        return {}
+
+    except json.JSONDecodeError:
+        print("Error: Password file is corrupted.")
+        return {}
+
+    except Exception as e:
+        print(f"Unexpected Error: {e}")
+        return {}
+
+
+# Save passwords to JSON file
+def save_passwords(passwords):
+    try:
+        with open(FILE_NAME, "w") as file:
+            json.dump(passwords, file, indent=4)
+
+    except Exception as e:
+        print(f"Error saving passwords: {e}")
+
+
+# Get website input
+def get_website():
+    return input("Enter website name: ").strip().lower()
+
+
+# Get password input
+def get_password():
+    return input("Enter password: ").strip()
+
+
+# Generate strong password
 def generate_password():
-    chars = string.ascii_letters + string.digits + "@#$%"
-    password = "".join(random.choice(chars) for i in range(10))
-    return password
 
+    try:
+        length = int(input("Enter password length: "))
 
-# Save passwords to file
-def save_file():
-    with open("password.txt", "w") as file:
-        for website, password in passwords.items():
-            file.write(f"{website}:{password}\n")
+        if length < 4:
+            print("Password length should be at least 4.")
+            return None
 
+    except ValueError:
+        print("Please enter a valid number.")
+        return None
 
-while True:
+    letters = string.ascii_letters
+    digits = string.digits
+    symbols = "@#$%&*!?"
 
-    print("\n===== PASSWORD MANAGER =====")
-    print("1. Add New Password")
-    print("2. View Passwords")
-    print("3. Generate Password")
-    print("4. Search Password")
-    print("5. Update Password")
-    print("6. Delete Password")
-    print("7. Exit")
+    password = []
 
-    choice = input("Enter your choice: ")
+    for _ in range(length):
 
-    # Save Password
-    if choice == "1":
+        choice = random.choice(["letter", "digit", "symbol"])
 
-        site = input("Enter website: ")
-        pwd = input("Enter password: ")
+        if choice == "letter":
+            password.append(random.choice(letters))
 
-        passwords[site] = pwd
-        save_file()
-
-        print("Password Saved Successfully")
-
-    # View Passwords
-    elif choice == "2":
-
-        if not passwords:
-            print("No passwords saved")
+        elif choice == "digit":
+            password.append(random.choice(digits))
 
         else:
-            print("\nSaved Passwords:")
+            password.append(random.choice(symbols))
 
-            for site, pwd in passwords.items():
-                print(site, ":", pwd)
+    random.shuffle(password)
 
-    # Generate Password
-    elif choice == "3":
+    return "".join(password)
 
-        print("Generated Password:", generate_password())
 
-    # Search Password
-    elif choice == "4":
+# Add password
+def add_password(passwords):
 
-        site = input("Enter website name: ")
+    site = get_website()
+    pwd = get_password()
 
-        if site in passwords:
-            print("Password:", passwords[site])
+    passwords[site] = pwd
 
-        else:
-            print("Website not found")
+    save_passwords(passwords)
 
-    # Update Password
-    elif choice == "5":
+    print("Password Saved Successfully.")
 
-        site = input("Enter website name: ")
 
-        if site in passwords:
+# View passwords
+def view_passwords(passwords):
 
-            new_pwd = input("Enter new password: ")
+    if not passwords:
+        print("No passwords saved.")
+        return
 
-            passwords[site] = new_pwd
-            save_file()
+    print("\n===== SAVED PASSWORDS =====")
 
-            print("Password Updated Successfully")
+    for site, pwd in passwords.items():
+        print(f"{site} : {pwd}")
 
-        else:
-            print("Website not found")
 
-    # Delete Password
-    elif choice == "6":
+# Search password
+def search_password(passwords):
 
-        site = input("Enter website name: ")
+    if not passwords:
+        print("No passwords available.")
+        return
 
-        if site in passwords:
+    site = get_website()
 
-            del passwords[site]
-            save_file()
-
-            print("Password Deleted Successfully")
-
-        else:
-            print("Website not found")
-
-    # Exit
-    elif choice == "7":
-
-        print("Good Bye...  See you soon")
-        break
+    if site in passwords:
+        print("Password:", passwords[site])
 
     else:
-        print("Invalid input")
+        print("Website not found.")
+
+
+# Update password
+def update_password(passwords):
+
+    if not passwords:
+        print("No passwords available.")
+        return
+
+    site = get_website()
+
+    if site in passwords:
+
+        new_pwd = get_password()
+
+        passwords[site] = new_pwd
+
+        save_passwords(passwords)
+
+        print("Password Updated Successfully.")
+
+    else:
+        print("Website not found.")
+
+
+# Delete password
+def delete_password(passwords):
+
+    if not passwords:
+        print("No passwords available.")
+        return
+
+    site = get_website()
+
+    if site in passwords:
+
+        del passwords[site]
+
+        save_passwords(passwords)
+
+        print("Password Deleted Successfully.")
+
+    else:
+        print("Website not found.")
+
+
+# Main Program
+def main():
+
+    passwords = load_passwords()
+
+    while True:
+
+        print("\n===== PASSWORD MANAGER =====")
+        print("1. Add New Password")
+        print("2. View Passwords")
+        print("3. Generate Password")
+        print("4. Search Password")
+        print("5. Update Password")
+        print("6. Delete Password")
+        print("7. Exit")
+
+        choice = input("Enter your choice: ").strip()
+
+        match choice:
+
+            case "1":
+                add_password(passwords)
+
+            case "2":
+                view_passwords(passwords)
+
+            case "3":
+
+                password = generate_password()
+
+                if password:
+                    print("Generated Password:", password)
+
+            case "4":
+                search_password(passwords)
+
+            case "5":
+                update_password(passwords)
+
+            case "6":
+                delete_password(passwords)
+
+            case "7":
+                print("Good Bye...")
+                break
+
+            case _:
+                print("Invalid Choice. Try Again.")
+
+
+if __name__ == "__main__":
+    main()
